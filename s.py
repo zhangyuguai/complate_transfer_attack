@@ -30,7 +30,7 @@ def get_parser():
 
 def main():
     args = get_parser()
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.GPU_ID
+    os.environ["CUDA_VISIBLE_S"] = args.GPU_ID
     os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
     os.environ['TORCH_HUB_URL'] = "https://mirrors.aliyun.com/pytorch-wheels/torchhub"
 

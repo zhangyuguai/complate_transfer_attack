@@ -1,12 +1,12 @@
 import argparse
+import os
 
 from tqdm import tqdm
+
 import transferattack
 from transferattack.utils import *
-import os
-import requests
 
-
+device = get_device()
 
 def get_parser():
     parser = argparse.ArgumentParser(description='Generating transferable adversaria examples')
@@ -29,13 +29,14 @@ def get_parser():
 
 def main():
     args = get_parser()
-    os.environ["CUDA_VISIBLE_DEVICES"] = args.GPU_ID
+    #os.environ["CUDA_VISIBLE_DEVICES"] = args.GPU_ID
     # 设置系统级代理（全局生效）
-    os.environ['HTTP_PROXY'] = 'http://127.0.0.1:7890'  # 替换为你的代理地址
-    os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:7890'
+    #os.environ['HTTP_PROXY'] = 'http://127.0.0.1:7890'  # 替换为你的代理地址
+    #os.environ['HTTPS_PROXY'] = 'http://127.0.0.1:7890'
     os.environ['HF_ENDPOINT'] = 'https://hf-mirror.com'
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
+    #定义device
 
     dataset = AdvDataset(input_dir=args.input_dir, output_dir=args.output_dir, targeted=args.targeted, eval=args.eval)
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batchsize, shuffle=False, num_workers=4)
@@ -63,8 +64,9 @@ def main():
                 save_images(args.output_dir, images + perturbations.cpu(), filenames)
     else:
         res = '|'
+
         for model_name, model in load_pretrained_model(cnn_model_paper, vit_model_paper):
-            model = wrap_model(model.eval().cuda())
+            model = wrap_model(model.eval().to(device))
             for p in model.parameters():
                 p.requires_grad = False
                 
@@ -127,7 +129,7 @@ def eval(model, dataloader, is_targeted=False):
             #print(f"Batch {step}: Final labels: {labels}")
 
             # Get predictions
-            pred = model(images.cuda()).argmax(dim=1).cpu()
+            pred = model(images.to(device)).argmax(dim=1).cpu()
 
             # Debug: Print predictions
             #print(f"Batch {step}: Predictions: {pred}")

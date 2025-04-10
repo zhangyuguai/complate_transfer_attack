@@ -34,6 +34,37 @@ tgr_vit_model_list = ['vit_base_patch16_224', 'pit_b_224', 'cait_s24_224', 'visf
 
 generation_target_classes = [24, 99, 245, 344, 471, 555, 661, 701, 802, 919]
 
+
+import torch
+import platform
+
+def get_device():
+    system = platform.system()
+
+    if system == 'Linux':  # Ubuntu 属于 Linux
+        if torch.cuda.is_available():
+            print("Using CUDA on Linux")
+            return torch.device("cuda")
+        else:
+            print("CUDA not available on Linux, falling back to CPU")
+            return torch.device("cpu")
+
+    elif system == 'Windows':
+        if torch.cuda.is_available():
+            print("Using CUDA on Windows")
+            return torch.device("cuda")
+        else:
+            print("CUDA not available on Windows, falling back to CPU")
+            return torch.device("cpu")
+
+    elif system == 'Darwin':  # macOS 的平台标识
+        print("Using CPU on macOS (MPS optional but limited)")
+        return torch.device("cpu")
+
+    else:
+        print(f"Unknown system: {system}, using CPU")
+        return torch.device("cpu")
+
 def load_pretrained_model(cnn_model=[], vit_model=[]):
     # print(timm.list_models('*inception_resnet*'))
     for model_name in timm_cnn_model:

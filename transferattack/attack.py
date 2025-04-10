@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 from torchvision.models import resnet50
 from tqdm import tqdm
 
-from defense.diffpure.guided_diffusion.nn import checkpoint
+#from defense.diffpure.guided_diffusion.nn import checkpoint
 from saliency import get_saliency_map
 from .utils import *
 
@@ -39,9 +39,9 @@ class Attack(object):
         self.random_start = random_start
         self.norm = norm
         if isinstance(self.model, EnsembleModel):
-            self.device = self.model.device
+            self.device = get_device()
         else:
-            self.device = next(self.model.parameters()).device if device is None else device
+            self.device = get_device() if device is None else device
         self.loss = self.loss_function(loss)
     def test(self):
         return resnet50(pretrained=True).cuda()
@@ -71,7 +71,10 @@ class Attack(object):
                 model = timm.create_model(model_name, pretrained=True)
             else:
                 raise ValueError('Model {} not supported'.format(model_name))
-            return wrap_model(model.eval().cuda())
+            # def device():
+            #     return torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+            # print(device())
+            return wrap_model(model.eval().to(get_device()))
 
         if isinstance(model_name, list):
             return EnsembleModel([load_single_model(name) for name in model_name])
